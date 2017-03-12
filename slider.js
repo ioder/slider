@@ -45,12 +45,15 @@ Slider.prototype.init = function() {
 	// create background arc
 	this.backgroundArc = document.createElementNS(xmlns, 'path');
 	this.backgroundArc.setAttribute('fill', '#d3d3d3');
+	this.hiddenBackgroundArc = document.createElementNS(xmlns, 'path');
+	this.hiddenBackgroundArc.style.opacity = 0.0;
 	// create foreground arc
 	this.foregroundArc = document.createElementNS(xmlns, "path");
 	this.foregroundArc.setAttribute('fill', this.options.color);
 	this.foregroundArc.style.opacity = 0.6;
 
 	this.options.container.appendChild(this.backgroundArc);
+	this.options.container.appendChild(this.hiddenBackgroundArc);
 	this.options.container.appendChild(this.foregroundArc);
 	this.options.container.appendChild(this.marker);
 	this.options.legendGroup.appendChild(this.rect);
@@ -72,9 +75,9 @@ Slider.prototype.init = function() {
 	this.foregroundArc.addEventListener('mousedown', this.pressWrapper);
 	this.foregroundArc.addEventListener('touchstart', this.pressWrapper);
 
-	this.backgroundArc.addEventListener('click', this.moveWrapper);
-	this.backgroundArc.addEventListener('mousedown', this.pressWrapper);
-	this.backgroundArc.addEventListener('touchstart', this.pressWrapper);
+	this.hiddenBackgroundArc.addEventListener('click', this.moveWrapper);
+	this.hiddenBackgroundArc.addEventListener('mousedown', this.pressWrapper);
+	this.hiddenBackgroundArc.addEventListener('touchstart', this.pressWrapper);
 
 	this.marker.addEventListener('click', this.moveWrapper);
 	this.marker.addEventListener('mousedown', this.pressWrapper);
@@ -112,6 +115,7 @@ Slider.prototype.drawBackgroundArc = function() {
 		fullDescription += ' ' + this.buildArcDescription(startAngle, endAngle);
 	}
 	this.backgroundArc.setAttribute('d', fullDescription);
+	this.hiddenBackgroundArc.setAttribute('d', this.buildArcDescription(this.sliderStartAngleDiff, 360 + this.sliderStartAngleDiff));
 }
 
 Slider.prototype.buildArcDescription = function(startAngle, endAngle) {
@@ -131,7 +135,6 @@ Slider.prototype.buildArcDescription = function(startAngle, endAngle) {
 	var innerArcEnd   = Math.polarToCartesian(this.centerX, this.centerY, innerRadius, endAngle);
 
 	var largeArcFlag = Math.abs(endAngle - startAngle) <= 180 ? '0' : '1';
-
 	var closingCommand = forceClose ? ['Z', 'M', innerArcEnd.x, innerArcEnd.y].join(' ') : ['L', innerArcEnd.x, innerArcEnd.y].join(' ');
 	var description = [
 		'M', outerArcStart.x, outerArcStart.y,
@@ -163,7 +166,7 @@ Slider.prototype.onRelease = function(event) {
 }
 
 Slider.prototype.onMove = function(event) {
-	if(this.sliderActive) {
+	if(this.sliderActive || event.type === 'click') {
 		var interactedPosition = this.getInteractedPosition(event);
 		var x = interactedPosition.x - this.centerX;
 		var y = interactedPosition.y - this.centerY;
