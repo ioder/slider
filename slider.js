@@ -83,7 +83,7 @@ Slider.prototype.init = function() {
 
 Slider.prototype.drawLegend = function() {
 	var textNumber = this.options.legendGroup.getElementsByTagName('text').length;
-	var legendY = this.centerY / 2 + (1.5 + this.sliderId) * this.textFontSize;
+	var legendY = this.centerY / 2 + (1 + this.sliderId) * this.textFontSize;
 	// set text
 	this.text.setAttribute('x', this.legendWidth);
 	this.text.setAttribute('y', legendY);
@@ -115,7 +115,9 @@ Slider.prototype.drawBackgroundArc = function() {
 }
 
 Slider.prototype.buildArcDescription = function(startAngle, endAngle) {
-	forceClose = endAngle % (360 + this.sliderStartAngleDiff) === 0 && endAngle / (360 + this.sliderStartAngleDiff) > 0;
+	// force close arc if end angle close to 360 + slider starting angle and end angle made full circle
+	var maxAngleValue = this.sliderStartAngleDiff + 360;
+	var forceClose = (endAngle % maxAngleValue === 0 || Math.abs(endAngle % maxAngleValue - maxAngleValue) < 1e-5) && Math.abs(endAngle / (360 + this.sliderStartAngleDiff)) > 0;
 	endAngle = forceClose ? endAngle - 1 : endAngle;
 
 	// outer arc params
